@@ -10,13 +10,13 @@ public class MapCamera : MonoBehaviour
     public Shader unlitShader;
     public GameObject player;
 
-    private Camera camera;
+    private Camera mapCamera;
     private Renderer playerRender;
 
     void Start()
     {
-        camera = GetComponent<Camera>();
-        camera.SetReplacementShader(unlitShader, "");
+        mapCamera = GetComponent<Camera>();
+        mapCamera.SetReplacementShader(unlitShader, "");
         playerRender = player.GetComponent<Renderer>();
     }
 
