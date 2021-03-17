@@ -13,9 +13,9 @@ public class MiniMap : MonoBehaviour {
 	public GameObject player;
 	public GameObject playerIcon;
 	public GameObject northIcon;
-	public List<GameObject> targets;
-	public List<GameObject> targetInvisiableIcons;
-	public List<GameObject> targetVisiableIcons;
+	public GameObject target;
+	public GameObject targetInvisiableIcon;
+	public GameObject targetVisiableIcon;
 	public bool lockOrientation;
 
 	private Vector3 playerPosition;
@@ -75,22 +75,19 @@ public class MiniMap : MonoBehaviour {
 
 	private void UpdateTargetIcons()
 	{
-		for(int i = 0; i < targets.Count; i++)
+		var point = mapCamera.WorldToViewportPoint(target.transform.position);
+		if(point.x < 0.05f || point.x > 0.95f || point.y < 0.05f || point.y > 0.95f)
 		{
-			var point = mapCamera.WorldToViewportPoint(targets[i].transform.position);
-			if(point.x < 0.05f || point.x > 0.95f || point.y < 0.05f || point.y > 0.95f)
-			{
-				targetInvisiableIcons[i].SetActive(true);
-				targetVisiableIcons[i].SetActive(false);
-				targetInvisiableIcons[i].transform.localPosition = new Vector3(Mathf.Clamp(point.x, 0.05f, 0.95f) - 0.5f, Mathf.Clamp(point.y, 0.05f, 0.95f) - 0.5f) * 2 * 100f;
-				targetInvisiableIcons[i].transform.localRotation = Quaternion.FromToRotation(Vector3.up, new Vector3(point.x - 0.5f, point.y - 0.5f) * 2);
-			}
-			else
-			{
-				targetVisiableIcons[i].SetActive(true);
-				targetInvisiableIcons[i].SetActive(false);
-				targetVisiableIcons[i].transform.localPosition = new Vector3(point.x - 0.5f, point.y - 0.5f) * 2 * 100f;
-			}
+			targetInvisiableIcon.SetActive(true);
+			targetVisiableIcon.SetActive(false);
+			targetInvisiableIcon.transform.localPosition = new Vector3(Mathf.Clamp(point.x, 0.05f, 0.95f) - 0.5f, Mathf.Clamp(point.y, 0.05f, 0.95f) - 0.5f) * 2 * 100f;
+			targetInvisiableIcon.transform.localRotation = Quaternion.FromToRotation(Vector3.up, new Vector3(point.x - 0.5f, point.y - 0.5f) * 2);
+		}
+		else
+		{
+			targetVisiableIcon.SetActive(true);
+			targetInvisiableIcon.SetActive(false);
+			targetVisiableIcon.transform.localPosition = new Vector3(point.x - 0.5f, point.y - 0.5f) * 2 * 100f;
 		}
 	}
 
@@ -112,18 +109,6 @@ public class MiniMap : MonoBehaviour {
 				DOTween.To(()=>mapCamera.fieldOfView, x=>mapCamera.fieldOfView = x, value, 0.5f);
 			}
 		}
-		
-		// float value = 0.01f;
-		// if(mapCamera.fieldOfView > 10) {
-		// 	value = mapCamera.fieldOfView - 10;
-		// }
-		// DOTween.To(()=>mapCamera.fieldOfView, x=>mapCamera.fieldOfView = x, value, 0.5f);
-
-		// float value = mapCamera.transform.position.y - 5;
-		// if(mapCamera.transform.position.y > 5)
-		// {
-		// 	mapCamera.transform.DOMoveY(value, 0.5f);
-		// }
     }
 	
     public void ZoomOut()
@@ -144,14 +129,5 @@ public class MiniMap : MonoBehaviour {
 				DOTween.To(()=>mapCamera.fieldOfView, x=>mapCamera.fieldOfView = x, value, 0.5f);
 			}
 		}
-
-		// float value = mapCamera.fieldOfView + 10;
-		// DOTween.To(()=>mapCamera.fieldOfView, x=>mapCamera.fieldOfView = x, value, 0.5f);
-		
-		// float value = mapCamera.transform.position.y + 5;
-		// if(mapCamera.transform.position.y < 50)
-		// {
-		// 	mapCamera.transform.DOMoveY(value, 0.5f);
-		// }
     }
 }
