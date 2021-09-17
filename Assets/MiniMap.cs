@@ -10,22 +10,16 @@ using UnityEngine.UI;
 public class MiniMap : MonoBehaviour {
 
 	public Camera mapCamera;
-	public Button zoomInButton;
-	public Button zoomOutButton;
-	public Text coordText;
 	public GameObject player;
 	public GameObject playerIcon;
+	public GameObject northIcon;
 	public List<GameObject> targets;
 	public List<GameObject> targetInvisiableIcons;
 	public List<GameObject> targetVisiableIcons;
+	public bool lockOrientation;
 
 	private Vector3 playerPosition;
 	private Quaternion playerRotation;
-
-	void Awake() {
-		zoomInButton.onClick.AddListener(OnZoomIn);
-		zoomOutButton.onClick.AddListener(OnZoomOut);
-	}
 
     // Use this for initialization
     void Start () {
@@ -35,8 +29,7 @@ public class MiniMap : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		UpdatePlayer();
-		UpdateCoordText();
-		UpdateCameraPosition();
+		UpdateCamera();
 		UpdatePlayerIcon();
 		UpdateTargetIcons();
 	}
@@ -47,21 +40,37 @@ public class MiniMap : MonoBehaviour {
 		playerRotation = player.transform.rotation;
 	}
 
-	private void UpdateCoordText()
-	{
-		coordText.text = string.Format("({0:0.00},{1:0.00})", playerPosition.x, playerPosition.z);
-	}
-
-	private void UpdateCameraPosition()
+	private void UpdateCamera()
 	{
 		var cameraPos = mapCamera.transform.position;
 		cameraPos = new Vector3(playerPosition.x, cameraPos.y, playerPosition.z);
 		mapCamera.transform.position = cameraPos;
+
+		var cameraEulerAngles = mapCamera.transform.eulerAngles;
+		if(lockOrientation)
+		{
+			cameraEulerAngles.y = playerRotation.eulerAngles.y;
+			mapCamera.transform.eulerAngles = cameraEulerAngles;
+		}
+		else
+		{
+			cameraEulerAngles.y = 0;
+			mapCamera.transform.eulerAngles = cameraEulerAngles;
+		}
 	}
 
 	private void UpdatePlayerIcon()
 	{
-		playerIcon.transform.localEulerAngles = new Vector3(0, 0, -playerRotation.eulerAngles.y);
+		if(lockOrientation)
+		{
+			northIcon.transform.localEulerAngles = new Vector3(0, 0, playerRotation.eulerAngles.y);
+			playerIcon.transform.localEulerAngles = new Vector3(0, 0, 0);
+		}
+		else
+		{
+			playerIcon.transform.localEulerAngles = new Vector3(0, 0, -playerRotation.eulerAngles.y);
+			northIcon.transform.localEulerAngles = new Vector3(0, 0, 0);
+		}
 	}
 
 	private void UpdateTargetIcons()
@@ -69,7 +78,7 @@ public class MiniMap : MonoBehaviour {
 		for(int i = 0; i < targets.Count; i++)
 		{
 			var point = mapCamera.WorldToViewportPoint(targets[i].transform.position);
-			Debug.Log(point);
+			// Debug.Log(point);
 			if(point.x < 0.05f || point.x > 0.95f || point.y < 0.05f || point.y > 0.95f)
 			{
 				targetInvisiableIcons[i].SetActive(true);
@@ -86,7 +95,7 @@ public class MiniMap : MonoBehaviour {
 		}
 	}
 
-	private void OnZoomIn()
+	public void ZoomIn()
     {
 		float value = 0.01f;
 		if(mapCamera.fieldOfView > 10) {
@@ -95,7 +104,7 @@ public class MiniMap : MonoBehaviour {
 		DOTween.To(()=>mapCamera.fieldOfView, x=>mapCamera.fieldOfView = x, value, 0.5f);
     }
 	
-    private void OnZoomOut()
+    public void ZoomOut()
     {
 		float value = mapCamera.fieldOfView + 10;
 		DOTween.To(()=>mapCamera.fieldOfView, x=>mapCamera.fieldOfView = x, value, 0.5f);
